@@ -1,0 +1,58 @@
+{
+  "name": "@glyria/bot",
+  "version": "1.0.2",
+  "type": "module",
+  "description": "The Discord bot framework with a clean DX — built on top of discord.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepublish": "npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "cli": "tsx src/cli/index.ts",
+    "lint": "eslint src/",
+    "format": "prettier --write src/"
+  },
+  "keywords": [
+    "discord",
+    "discord-bot",
+    "discord.js",
+    "framework",
+    "bot",
+    "slash-commands",
+    "embeds-v2",
+    "typescript"
+  ],
+  "author": {
+    "name": "Glyria",
+    "email": "contact@glyria.app",
+    "url": "https://glyria.app"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.x",
+    "dotenv": "^17.4.2",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "@typescript-eslint/eslint-plugin": "^8.59.4",
+    "@typescript-eslint/parser": "^8.59.4",
+    "eslint": "^10.4.0",
+    "jiti": "^2.7.0",
+    "prettier": "^3.8.3",
+    "tsx": "^4.22.3",
+    "typescript": "^6.0.3",
+    "vitest": "^2.0.0"
+  },
+  "bin": {
+    "glyria": "./dist/cli/index.js"
+  }
+}

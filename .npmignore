@@ -1,0 +1,7 @@
+node_modules/
+.glyria/
+.env
+.prettierrc
+eslint.config.ts
+.idea/
+.vscode/
