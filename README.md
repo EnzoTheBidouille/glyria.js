@@ -160,9 +160,11 @@ export default defineGlyriaConfig({
 
 ---
 
-## Documentation
+## Support
 
-**[js.glyria.app](https://js.glyria.app)**
+- 📖 **Documentation** — [js.glyria.app](https://js.glyria.app)
+- 💬 **Discord** — [discord.gg/FMTdrdNJx5](https://discord.gg/FMTdrdNJx5)
+- 🐛 **Issues** — [GitHub Issues](https://github.com/Kiki344r/glyria.js/issues)
 
 ---
 
