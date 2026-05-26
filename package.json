@@ -43,7 +43,7 @@
     "email": "contact@glyria.app",
     "url": "https://glyria.app"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "dependencies": {
     "discord.js": "^14.x",
     "dotenv": "^17.4.2",
