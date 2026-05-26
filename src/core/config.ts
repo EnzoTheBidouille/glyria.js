@@ -3,8 +3,10 @@ import { pathToFileURL } from "url"
 import { resolve } from "path"
 import { existsSync } from "fs"
 import type { HexColorString } from "discord.js"
+import { createJiti } from "jiti"
 
 export interface GlyriaConfig {
+  modules?: string[]
   theme?: {
     embedV2?: {
       primaryColor?: HexColorString
@@ -16,7 +18,6 @@ export interface GlyriaConfig {
 
       footer?: {
         text?: string
-        iconURL?: string
       }
     }
   }
@@ -28,10 +29,11 @@ export const loadConfig = async () => {
   const path = resolve(process.cwd(), "glyria.config.ts")
 
   if (!existsSync(path)) return
-  const configPath = pathToFileURL(path).href
 
-  const mod = await import(`${configPath}?update=${Date.now()}`)
-  _config = mod.default ?? {}
+  const jiti = createJiti(import.meta.url)
+  const mod = await jiti.import(pathToFileURL(path).href)
+
+  _config = (mod as any).default ?? {}
 }
 
 export const useConfig = () => _config

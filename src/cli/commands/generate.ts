@@ -2,6 +2,9 @@ import { writeFileSync, mkdirSync, readdirSync, readFileSync, existsSync } from 
 
 import { resolve } from "path"
 import { logger } from "../../core/logger.js"
+import { loadConfig, useConfig } from "../../core/config.js"
+
+import "../../runtime/globals.js"
 
 const SCAN_DIRS = ["src/utils", "src/composables"]
 
@@ -17,6 +20,7 @@ const FRAMEWORK_EXPORTS = [
   "createReplyableContext",
   "hexToNumber",
   "GlyriaBus",
+  "globalBus",
 ]
 
 const DJS_VALUES = ["GatewayIntentBits", "Events"]
@@ -42,7 +46,33 @@ const extractExports = (filePath: string, importPath: string, userExports: strin
 export const generate = async () => {
   mkdirSync(".glyria", { recursive: true })
 
+  await loadConfig()
+  const config = useConfig()
+
   const userExports: string[] = []
+
+  // ===== SCAN MODULES =====
+
+  if (config.modules && config.modules.length > 0) {
+    for (const module of config.modules) {
+      try {
+        const moduleName = module
+          .split("/")
+          .pop()!
+          .replace(/[^a-zA-Z0-9]/g, "")
+
+        const globalName = moduleName.charAt(0).toUpperCase() + moduleName.slice(1)
+
+        // On vérifie que le module est importable
+        await import(module)
+
+        // GlobalName est typé comme le module entier (namespace)
+        userExports.push(`const ${globalName}: typeof import("${module}")`)
+      } catch {
+        logger.warn("Auto Imports", ` Module "${module}" not found — is it installed?`)
+      }
+    }
+  }
 
   // ===== SCAN DIRS =====
 

@@ -17,6 +17,10 @@ interface GlyriaProcessMessage {
   type: "hotreload:commands" | "hotreload:events" | "hotreload:config"
 }
 
+type globalBusEvents = {
+  botReady: [Client: GlyriaClient]
+}
+
 export interface GlyriaEvents extends ClientEvents {
   "glyria:ready": [
     {
@@ -25,6 +29,8 @@ export interface GlyriaEvents extends ClientEvents {
     },
   ]
 }
+
+export const globalBus = new GlyriaBus<globalBusEvents>()
 
 export class GlyriaClient extends Client {
   private botToken: string
@@ -81,6 +87,7 @@ export class GlyriaClient extends Client {
     const loggedToken = await super.login(token ?? this.botToken)
 
     this.once(Events.ClientReady, () => {
+      globalBus.emit("botReady", this)
       logger.ready(`${this.user?.tag}`)
     })
 

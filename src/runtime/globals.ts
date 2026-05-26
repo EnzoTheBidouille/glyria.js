@@ -8,6 +8,7 @@ import { Events } from "discord.js"
 import { createReplyableContext } from "../core/context/ReplyableContext.js"
 import { hexToNumber } from "../utils/hexToNumber.js"
 import { GlyriaBus } from "../core/bus.js"
+import { globalBus } from "../index.js"
 
 Object.assign(globalThis, {
   defineGlyriaConfig,
@@ -20,4 +21,5 @@ Object.assign(globalThis, {
   createReplyableContext,
   hexToNumber,
   GlyriaBus,
+  globalBus,
 })

@@ -1,11 +1,11 @@
 # Dependencies
 node_modules/
 
-# Build outputs
-dist/
-
 # Environment variables
 .env
+
+# Build output
+dist/
 
 # Generated files
 .glyria/
