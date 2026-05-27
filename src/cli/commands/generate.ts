@@ -29,11 +29,18 @@ const EXTENSION = ".ts"
 
 const extractExports = (filePath: string, importPath: string, userExports: string[]) => {
   const content = readFileSync(filePath, "utf-8")
+
+  // FIX REGEX : On capture uniquement le mot-clé (\w+) après export const/function/class
   const matches = [...content.matchAll(/export\s+(?:const|function|class)\s+(\w+)/g)]
 
+  // On vire l'extension de l'importPath pour que TypeScript ne râle pas
+  const cleanImportPath = importPath.endsWith(EXTENSION)
+    ? importPath.slice(0, -EXTENSION.length)
+    : importPath
+
   for (const match of matches) {
-    const key = match
-    userExports.push(`const ${key}: typeof import("../${importPath}")["${key}"]`)
+    const key = match // Ici on récupère juste "useDatabase" ou "client"
+    userExports.push(`const ${key}: typeof import("../${cleanImportPath}")["${key}"]`)
   }
 }
 
@@ -71,7 +78,6 @@ export const generate = async (enableModuleSDK = false) => {
 
   // ===== SCAN DIRS =====
   for (const dir of SCAN_DIRS) {
-    // On cible le bon dossier (ex: Bot/src/utils)
     const targetDir = getBotPath(dir)
     const fullDir = resolve(targetDir)
 
@@ -83,7 +89,7 @@ export const generate = async (enableModuleSDK = false) => {
 
     for (const file of files) {
       const filePath = resolve(fullDir, file)
-      // On passe targetDir pour que le chemin d'import généré dans le .d.ts soit correct
+      // On passe le chemin sans l'extension finale gérée par la boucle, mais on garde la structure
       extractExports(filePath, `${targetDir}/${file}`, userExports)
     }
   }
