@@ -29,18 +29,11 @@ const EXTENSION = ".ts"
 
 const extractExports = (filePath: string, importPath: string, userExports: string[]) => {
   const content = readFileSync(filePath, "utf-8")
-
-  // FIX REGEX : On capture uniquement le mot-clé (\w+) après export const/function/class
   const matches = [...content.matchAll(/export\s+(?:const|function|class)\s+(\w+)/g)]
 
-  // On vire l'extension de l'importPath pour que TypeScript ne râle pas
-  const cleanImportPath = importPath.endsWith(EXTENSION)
-    ? importPath.slice(0, -EXTENSION.length)
-    : importPath
-
   for (const match of matches) {
-    const key = match // Ici on récupère juste "useDatabase" ou "client"
-    userExports.push(`const ${key}: typeof import("../${cleanImportPath}")["${key}"]`)
+    const key = match[1]
+    userExports.push(`const ${key}: typeof import("../${importPath}")["${key}"]`)
   }
 }
 
@@ -52,12 +45,12 @@ export const generate = async (enableModuleSDK = false) => {
 
   const userExports: string[] = []
 
-  // Fonction utilitaire pour ajouter "Bot/" si l'option est active
   const getBotPath = (path: string) => {
     return enableModuleSDK ? `Bot/${path}` : path
   }
 
   // ===== SCAN MODULES =====
+
   if (config.modules && config.modules.length > 0) {
     for (const module of config.modules) {
       try {
@@ -69,6 +62,7 @@ export const generate = async (enableModuleSDK = false) => {
         const globalName = moduleName.charAt(0).toUpperCase() + moduleName.slice(1)
 
         await import(module)
+
         userExports.push(`const ${globalName}: typeof import("${module}")`)
       } catch {
         logger.warn("Auto Imports", ` Module "${module}" not found — is it installed?`)
@@ -77,6 +71,7 @@ export const generate = async (enableModuleSDK = false) => {
   }
 
   // ===== SCAN DIRS =====
+
   for (const dir of SCAN_DIRS) {
     const targetDir = getBotPath(dir)
     const fullDir = resolve(targetDir)
@@ -89,12 +84,12 @@ export const generate = async (enableModuleSDK = false) => {
 
     for (const file of files) {
       const filePath = resolve(fullDir, file)
-      // On passe le chemin sans l'extension finale gérée par la boucle, mais on garde la structure
       extractExports(filePath, `${targetDir}/${file}`, userExports)
     }
   }
 
   // ===== SCAN FILES =====
+
   for (const file of SCAN_FILES) {
     const targetFile = getBotPath(file)
     const filePath = resolve(`${targetFile}${EXTENSION}`)
@@ -107,12 +102,15 @@ export const generate = async (enableModuleSDK = false) => {
   }
 
   // ===== FRAMEWORK EXPORTS =====
+
   const frameworkLines = EXPORTS.map((e) => `const ${e}: typeof import("@glyria/bot")["${e}"]`)
 
   // ===== DJS TYPES =====
+
   const djsTypeLines = DJS_TYPES.map((e) => `type ${e} = import("discord.js").${e}`)
 
   // ===== FILE CONTENT =====
+
   const content = `// auto-généré par glyria — ne pas modifier
 
 export {}
