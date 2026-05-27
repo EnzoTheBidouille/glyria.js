@@ -84,12 +84,12 @@ export class GlyriaClient extends Client {
     this.eventsManager.setClient(this)
     await this.eventsManager.load()
 
-    const loggedToken = await super.login(token ?? this.botToken)
-
-    this.once(Events.ClientReady, () => {
-      globalBus.emit("botReady", this)
+    this.once(Events.ClientReady, async () => {
+      await globalBus.emit("botReady", this)
       logger.ready(`${this.user?.tag}`)
     })
+
+    const loggedToken = await super.login(token ?? this.botToken)
 
     this.commandsManager.setClient(this).setToken(this.botToken)
 
