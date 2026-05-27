@@ -1,4 +1,3 @@
-// src/core/loader.ts
 import { readdirSync, existsSync } from "fs"
 import { resolve } from "path"
 import { pathToFileURL } from "url"
@@ -8,8 +7,12 @@ import { useConfig } from "./config.js"
 const isDev = process.env.GLYRIA_DEV === "true"
 const ext = isDev ? ".ts" : ".js"
 
-const commandsDir = isDev ? "src/commands" : "dist/commands"
-const eventsDir = isDev ? "src/events" : "dist/events"
+// On récupère le préfixe s'il existe (ex: "Bot"), sinon chaîne vide
+const botRoot = process.env.GLYRIA_BOT_ROOT ? `${process.env.GLYRIA_BOT_ROOT}/` : ""
+
+// On applique le préfixe sur les dossiers du bot, mais PAS sur les node_modules
+const commandsDir = isDev ? `${botRoot}src/commands` : `${botRoot}dist/commands`
+const eventsDir = isDev ? `${botRoot}src/events` : `${botRoot}dist/events`
 
 interface LoadedCommand {
   json: ReturnType<GlyriaCommand["build"]>
@@ -23,6 +26,7 @@ interface LoadedEvents {
 }
 
 const resolveModuleDir = (moduleName: string): string | null => {
+  // Les modules restent dans le node_modules global du projet (pas dans Bot/node_modules)
   const base = resolve(process.cwd(), "node_modules", moduleName)
 
   const dist = resolve(base, "dist")
@@ -62,7 +66,6 @@ export const loadCommands = async (): Promise<LoadedCommand[]> => {
   await scanDir(resolve(commandsDir))
 
   // ===== MODULES =====
-
   const config = useConfig()
 
   for (const moduleName of config.modules ?? []) {
@@ -114,7 +117,6 @@ export const loadEvents = async (): Promise<LoadedEvents[]> => {
   await scanDir(resolve(eventsDir))
 
   // ===== MODULES =====
-
   const config = useConfig()
 
   for (const moduleName of config.modules ?? []) {

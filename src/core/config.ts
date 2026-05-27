@@ -1,4 +1,3 @@
-// src/core/config.ts
 import { pathToFileURL } from "url"
 import { resolve } from "path"
 import { existsSync } from "fs"
@@ -26,7 +25,11 @@ export interface GlyriaConfig {
 let _config: GlyriaConfig = {}
 
 export const loadConfig = async () => {
-  const path = resolve(process.cwd(), "glyria.config.ts")
+  // On récupère le sous-dossier s'il existe (ex: "Bot"), sinon chaîne vide
+  const botRoot = process.env.GLYRIA_BOT_ROOT ?? ""
+
+  // On résout le chemin en incluant le dossier racine du bot
+  const path = resolve(process.cwd(), botRoot, "glyria.config.ts")
 
   if (!existsSync(path)) return
 

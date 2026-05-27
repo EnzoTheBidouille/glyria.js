@@ -1,12 +1,14 @@
-// src/cli/commands/start.ts
 import { spawn } from "child_process"
 import { existsSync } from "fs"
 import { resolve } from "path"
 import { pathToFileURL } from "url"
 
-export const start = async () => {
-  if (!existsSync("dist/index.js")) {
-    console.error("❌ Aucun build trouvé, lance npm run build d'abord")
+export const start = async (enableModuleSDK = false) => {
+  const distFolder = enableModuleSDK ? "Bot/dist" : "dist"
+  const entryPoint = `${distFolder}/index.js`
+
+  if (!existsSync(entryPoint)) {
+    console.error(`❌ Aucun build trouvé dans ${distFolder}, lance le build d'abord`)
     process.exit(1)
   }
 
@@ -16,9 +18,13 @@ export const start = async () => {
     resolve(process.cwd(), "node_modules/@glyria/bot/dist/runtime/bootstrap.js"),
   ).href
 
-  const proc = spawn("node", ["--import", bootstrapPath], {
+  const proc = spawn("node", ["--import", bootstrapPath, entryPoint], {
     stdio: "inherit",
     shell: true,
+    env: {
+      ...process.env,
+      GLYRIA_BOT_ROOT: enableModuleSDK ? "Bot" : ".",
+    },
   })
 
   proc.on("exit", (code) => {
