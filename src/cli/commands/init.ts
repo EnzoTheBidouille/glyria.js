@@ -13,6 +13,7 @@ export const init = async () => {
   mkdirSync("src/commands", { recursive: true })
   mkdirSync("src/events", { recursive: true })
   mkdirSync("src/utils", { recursive: true })
+  mkdirSync("src/composables", { recursive: true })
   mkdirSync(".glyria", { recursive: true })
 
   // tsconfig.json

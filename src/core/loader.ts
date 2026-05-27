@@ -1,8 +1,9 @@
 // src/core/loader.ts
-import { readdirSync } from "fs"
+import { readdirSync, existsSync } from "fs"
 import { resolve } from "path"
 import { pathToFileURL } from "url"
 import { GlyriaCommand } from "../builders/commandBuilder.js"
+import { useConfig } from "./config.js"
 
 const isDev = process.env.GLYRIA_DEV === "true"
 const ext = isDev ? ".ts" : ".js"
@@ -19,6 +20,18 @@ interface LoadedEvents {
   name: string
   once: boolean
   handler: (...args: any[]) => void
+}
+
+const resolveModuleDir = (moduleName: string): string | null => {
+  const base = resolve(process.cwd(), "node_modules", moduleName)
+
+  const dist = resolve(base, "dist")
+  const src = resolve(base, "src")
+
+  if (existsSync(dist)) return dist
+  if (existsSync(src)) return src
+
+  return null
 }
 
 export const loadCommands = async (): Promise<LoadedCommand[]> => {
@@ -47,6 +60,21 @@ export const loadCommands = async (): Promise<LoadedCommand[]> => {
   }
 
   await scanDir(resolve(commandsDir))
+
+  // ===== MODULES =====
+
+  const config = useConfig()
+
+  for (const moduleName of config.modules ?? []) {
+    const moduleDir = resolveModuleDir(moduleName)
+    if (!moduleDir) continue
+
+    const moduleCommandsDir = resolve(moduleDir, "commands")
+    if (existsSync(moduleCommandsDir)) {
+      await scanDir(moduleCommandsDir)
+    }
+  }
+
   return loaded
 }
 
@@ -84,5 +112,20 @@ export const loadEvents = async (): Promise<LoadedEvents[]> => {
   }
 
   await scanDir(resolve(eventsDir))
+
+  // ===== MODULES =====
+
+  const config = useConfig()
+
+  for (const moduleName of config.modules ?? []) {
+    const moduleDir = resolveModuleDir(moduleName)
+    if (!moduleDir) continue
+
+    const moduleEventsDir = resolve(moduleDir, "events")
+    if (existsSync(moduleEventsDir)) {
+      await scanDir(moduleEventsDir)
+    }
+  }
+
   return loaded
 }

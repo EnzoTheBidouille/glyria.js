@@ -7,6 +7,8 @@ import { resolve } from "path"
 import { pathToFileURL } from "url"
 import { logger } from "../../core/logger.js"
 
+const RESTART_PATHS = ["composables", "utils"]
+
 export const dev = () => {
   logger.banner()
   logger.info("Dev Mode", "Glyria dev mode started")
@@ -76,6 +78,10 @@ export const dev = () => {
     }
 
     // ===== FULL RESTART =====
+
+    if (!RESTART_PATHS.some((p) => filename.startsWith(p))) {
+      return
+    }
 
     if (restartTimeout) {
       clearTimeout(restartTimeout)
