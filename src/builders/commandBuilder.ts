@@ -2,6 +2,7 @@ interface Command {
   name: string
   description: string
   options: CommandOptionData[]
+  default_member_permissions: string | undefined
 }
 
 type CommandOptionData =
@@ -227,7 +228,12 @@ export class GlyriaSubCommandGroup {
 // ===== MAIN COMMAND =====
 
 export class GlyriaCommand extends BaseCommand {
-  private command: Command = { name: "", description: "", options: [] }
+  private command: Command = {
+    name: "",
+    description: "",
+    options: [],
+    default_member_permissions: undefined,
+  }
 
   setName(name: string): this {
     this.command.name = name
@@ -251,6 +257,11 @@ export class GlyriaCommand extends BaseCommand {
     fn(group)
     this.command.options.push(group.build())
     this.handlers.push(...group.getHandler(this.command.name))
+    return this
+  }
+
+  setPermissions(permissions: bigint | number | string): this {
+    this.command.default_member_permissions = permissions.toString()
     return this
   }
 

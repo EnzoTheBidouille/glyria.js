@@ -32,6 +32,8 @@ const resolveModuleDir = (moduleName: string): string | null => {
   const dist = resolve(base, "dist")
   const src = resolve(base, "src")
 
+  if (isDev && existsSync(resolve(base, "src"))) return src
+
   if (existsSync(dist)) return dist
   if (existsSync(src)) return src
 
