@@ -1,3 +1,5 @@
+import type { ChatInputCommandInteraction } from "discord.js"
+
 interface Command {
   name: string
   description: string
@@ -78,7 +80,7 @@ interface SubCommandGroupOption {
 interface CommandHandler {
   name: string
   type: "command" | "subcommand"
-  handler: (ctx: any) => unknown
+  handler: (ctx: ChatInputCommandInteraction) => unknown
 }
 
 // ===== OPTION BUILDER =====
