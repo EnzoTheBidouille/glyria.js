@@ -40,6 +40,8 @@ const extractExports = (filePath: string, importPath: string, userExports: strin
 export const generate = async (enableModuleSDK = false) => {
   mkdirSync(".glyria", { recursive: true })
 
+  process.env.GLYRIA_BOT_ROOT = enableModuleSDK ? "Bot" : ""
+
   await loadConfig()
   const config = useConfig()
 
