@@ -37,7 +37,7 @@ export const init = async () => {
             skipLibCheck: true,
             declaration: true,
           },
-          include: ["src/**/*", ".glyria/**/*"],
+          include: ["src/**/*", ".glyria/**/*", "*.ts"],
         },
         null,
         2,
@@ -51,9 +51,7 @@ export const init = async () => {
       "glyria.config.ts",
       `
 export default defineGlyriaConfig({
-  token: process.env.DISCORD_TOKEN!,
   theme: {
-    color: "#5865F2",
     footer: { text: "My bot" },
   }
 })
@@ -65,8 +63,7 @@ export default defineGlyriaConfig({
   if (!existsSync(".env")) {
     writeFileSync(
       ".env",
-      `DISCORD_TOKEN=
-CLIENT_ID=
+      `TOKEN=
 `,
     )
   }
@@ -100,7 +97,7 @@ await client.login()
   if (!existsSync("src/commands/ping.ts")) {
     writeFileSync(
       "src/commands/ping.ts",
-      `export default GlyriaCommand()
+      `export default new GlyriaCommand()
       .setName("ping")
   .setDescription("Pong!")
   .execute(() => {
