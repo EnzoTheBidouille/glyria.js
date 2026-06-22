@@ -4,9 +4,6 @@ import { logger } from "../../core/logger.js"
 import { loadConfig, useConfig } from "../../core/config.js"
 import "../../runtime/globals.js"
 
-const SCAN_DIRS = ["src/utils", "src/composables"]
-const SCAN_FILES = ["src/index"]
-
 const FRAMEWORK_EXPORTS = [
   "defineGlyriaConfig",
   "GlyriaClient",
@@ -38,9 +35,13 @@ export const generate = async (enableModuleSDK = false) => {
   const config = useConfig()
   const userExports: string[] = []
 
-  const getBotPath = (path: string) => {
-    return enableModuleSDK ? `Bot/${path}` : path
-  }
+  // ===== DYNAMIC SCAN DIRS FROM CONFIG =====
+  const scanDirs = (config.dev?.autoImportDirs ?? ["utils", "composables"]).map(
+    (dir) => `src/${dir}`,
+  )
+  const scanFiles = ["src/index"]
+
+  const getBotPath = (path: string) => (enableModuleSDK ? `Bot/${path}` : path)
 
   // ===== SCAN MODULES =====
   if (config.modules && config.modules.length > 0) {
@@ -60,7 +61,7 @@ export const generate = async (enableModuleSDK = false) => {
   }
 
   // ===== SCAN DIRS =====
-  for (const dir of SCAN_DIRS) {
+  for (const dir of scanDirs) {
     const targetDir = getBotPath(dir)
     const fullDir = resolve(targetDir)
     if (!existsSync(fullDir)) continue
@@ -72,7 +73,7 @@ export const generate = async (enableModuleSDK = false) => {
   }
 
   // ===== SCAN FILES =====
-  for (const file of SCAN_FILES) {
+  for (const file of scanFiles) {
     const targetFile = getBotPath(file)
     const filePath = resolve(`${targetFile}${EXTENSION}`)
     if (!existsSync(filePath)) continue
@@ -83,7 +84,6 @@ export const generate = async (enableModuleSDK = false) => {
   const frameworkLines = FRAMEWORK_EXPORTS.map(
     (e) => `const ${e}: typeof import("@glyria/bot")["${e}"]`,
   )
-
   const content = `// auto-généré par glyria — ne pas modifier
 export {}
 declare global {
@@ -91,7 +91,6 @@ declare global {
   ${[...frameworkLines, ...userExports].join("\n  ")}
 }
 `
-
   writeFileSync(".glyria/imports.d.ts", content)
   logger.success(
     "Auto Imports",

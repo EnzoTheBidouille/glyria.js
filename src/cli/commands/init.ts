@@ -52,7 +52,11 @@ export const init = async () => {
       `
 export default defineGlyriaConfig({
   theme: {
-    footer: { text: "My bot" },
+    embedV2: {
+      footer: {
+        text: "My bot",
+      },
+    },
   }
 })
 `,
