@@ -24,10 +24,9 @@ export const init = async () => {
         {
           compilerOptions: {
             outDir: "./dist",
-            module: "es2022",
-            moduleResolution: "bundler",
-            target: "ES2022",
-            lib: ["ES2022"],
+            module: "NodeNext",
+            moduleResolution: "NodeNext",
+            target: "ES2023",
             types: ["node"],
             strict: true,
             verbatimModuleSyntax: true,
