@@ -67,7 +67,9 @@ export const loadCommands = async (): Promise<LoadedCommand[]> => {
     }
   }
 
-  await scanDir(resolve(commandsDir))
+  if (existsSync(resolve(commandsDir))) {
+    await scanDir(resolve(commandsDir))
+  }
 
   // ===== MODULES =====
   const config = useConfig()
@@ -118,7 +120,9 @@ export const loadEvents = async (): Promise<LoadedEvents[]> => {
     }
   }
 
-  await scanDir(resolve(eventsDir))
+  if (existsSync(eventsDir)) {
+    await scanDir(resolve(eventsDir))
+  }
 
   // ===== MODULES =====
   const config = useConfig()
