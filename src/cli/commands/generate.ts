@@ -2,12 +2,9 @@ import { writeFileSync, mkdirSync, readdirSync, readFileSync, existsSync } from 
 import { resolve } from "path"
 import { logger } from "../../core/logger.js"
 import { loadConfig, useConfig } from "../../core/config.js"
-
 import "../../runtime/globals.js"
 
 const SCAN_DIRS = ["src/utils", "src/composables"]
-
-// chemins SANS extension
 const SCAN_FILES = ["src/index"]
 
 const FRAMEWORK_EXPORTS = [
@@ -20,17 +17,14 @@ const FRAMEWORK_EXPORTS = [
   "hexToNumber",
   "GlyriaBus",
   "globalBus",
+  "useCommands",
 ]
 
-const DJS_VALUES = ["GatewayIntentBits", "Events"]
-const DJS_TYPES = ["GatewayIntentsString", "BitFieldResolvable"]
-const EXPORTS = [...FRAMEWORK_EXPORTS, ...DJS_VALUES]
 const EXTENSION = ".ts"
 
 const extractExports = (filePath: string, importPath: string, userExports: string[]) => {
   const content = readFileSync(filePath, "utf-8")
   const matches = [...content.matchAll(/export\s+(?:const|function|class)\s+(\w+)/g)]
-
   for (const match of matches) {
     const key = match[1]
     userExports.push(`const ${key}: typeof import("../${importPath}")["${key}"]`)
@@ -39,12 +33,9 @@ const extractExports = (filePath: string, importPath: string, userExports: strin
 
 export const generate = async (enableModuleSDK = false) => {
   mkdirSync(".glyria", { recursive: true })
-
   process.env.GLYRIA_BOT_ROOT = enableModuleSDK ? "Bot" : ""
-
   await loadConfig()
   const config = useConfig()
-
   const userExports: string[] = []
 
   const getBotPath = (path: string) => {
@@ -52,7 +43,6 @@ export const generate = async (enableModuleSDK = false) => {
   }
 
   // ===== SCAN MODULES =====
-
   if (config.modules && config.modules.length > 0) {
     for (const module of config.modules) {
       try {
@@ -60,11 +50,8 @@ export const generate = async (enableModuleSDK = false) => {
           .split("/")
           .pop()!
           .replace(/[^a-zA-Z0-9]/g, "")
-
         const globalName = moduleName.charAt(0).toUpperCase() + moduleName.slice(1)
-
         await import(module)
-
         userExports.push(`const ${globalName}: typeof import("${module}")`)
       } catch {
         logger.warn("Auto Imports", ` Module "${module}" not found — is it installed?`)
@@ -73,17 +60,11 @@ export const generate = async (enableModuleSDK = false) => {
   }
 
   // ===== SCAN DIRS =====
-
   for (const dir of SCAN_DIRS) {
     const targetDir = getBotPath(dir)
     const fullDir = resolve(targetDir)
-
-    if (!existsSync(fullDir)) {
-      continue
-    }
-
+    if (!existsSync(fullDir)) continue
     const files = readdirSync(fullDir).filter((f) => f.endsWith(EXTENSION))
-
     for (const file of files) {
       const filePath = resolve(fullDir, file)
       extractExports(filePath, `${targetDir}/${file}`, userExports)
@@ -91,43 +72,27 @@ export const generate = async (enableModuleSDK = false) => {
   }
 
   // ===== SCAN FILES =====
-
   for (const file of SCAN_FILES) {
     const targetFile = getBotPath(file)
     const filePath = resolve(`${targetFile}${EXTENSION}`)
-
-    if (!existsSync(filePath)) {
-      continue
-    }
-
+    if (!existsSync(filePath)) continue
     extractExports(filePath, `${targetFile}${EXTENSION}`, userExports)
   }
 
-  // ===== FRAMEWORK EXPORTS =====
-
-  const frameworkLines = EXPORTS.map((e) => `const ${e}: typeof import("@glyria/bot")["${e}"]`)
-
-  // ===== DJS TYPES =====
-
-  const djsTypeLines = DJS_TYPES.map((e) => `type ${e} = import("discord.js").${e}`)
-
   // ===== FILE CONTENT =====
+  const frameworkLines = FRAMEWORK_EXPORTS.map(
+    (e) => `const ${e}: typeof import("@glyria/bot")["${e}"]`,
+  )
 
   const content = `// auto-généré par glyria — ne pas modifier
-
 export {}
-
 declare global {
+  const djs: typeof import("discord.js")
   ${[...frameworkLines, ...userExports].join("\n  ")}
-}
-
-declare global {
-  ${djsTypeLines.join("\n  ")}
 }
 `
 
   writeFileSync(".glyria/imports.d.ts", content)
-
   logger.success(
     "Auto Imports",
     "Generated .glyria/imports.d.ts with " + userExports.length + " user exports",

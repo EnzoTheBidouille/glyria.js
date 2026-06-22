@@ -45,10 +45,11 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
+    "chokidar": "^5.0.0",
     "discord.js": "^14.x",
     "dotenv": "^17.4.2",
-    "picocolors": "^1.1.1",
-    "jiti": "^2.7.0"
+    "jiti": "^2.7.0",
+    "picocolors": "^1.1.1"
   },
   "devDependencies": {
     "@types/node": "^25.9.1",

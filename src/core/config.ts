@@ -6,6 +6,10 @@ import { createJiti } from "jiti"
 
 export interface GlyriaConfig {
   modules?: string[]
+  dev?: {
+    autoImportDirs?: string[]
+    restartPaths?: string[]
+  }
   theme?: {
     embedV2?: {
       primaryColor?: HexColorString

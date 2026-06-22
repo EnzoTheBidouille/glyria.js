@@ -83,6 +83,14 @@ interface CommandHandler {
   handler: (ctx: ChatInputCommandInteraction) => unknown
 }
 
+// ===== COMMAND INFO =====
+
+export interface CommandInfo {
+  name: string
+  description: string
+  meta: Record<string, unknown>
+}
+
 // ===== OPTION BUILDER =====
 
 class CommandOption<T extends BasicCommandOption> {
@@ -227,6 +235,25 @@ export class GlyriaSubCommandGroup {
   }
 }
 
+// ===== GLOBAL COMMAND REGISTRY =====
+
+const commandRegistry: CommandInfo[] = []
+
+export const clearCommandRegistry = (): void => {
+  commandRegistry.length = 0
+}
+
+export const useCommands = (): CommandInfo[] => commandRegistry
+
+export const registerCommandInfo = (info: CommandInfo): void => {
+  const existing = commandRegistry.findIndex((c) => c.name === info.name)
+  if (existing !== -1) {
+    commandRegistry[existing] = info
+  } else {
+    commandRegistry.push(info)
+  }
+}
+
 // ===== MAIN COMMAND =====
 
 export class GlyriaCommand extends BaseCommand {
@@ -236,13 +263,20 @@ export class GlyriaCommand extends BaseCommand {
     options: [],
     default_member_permissions: undefined,
   }
+  private metadata: Record<string, unknown> = {}
 
   setName(name: string): this {
     this.command.name = name
     return this
   }
+
   setDescription(description: string): this {
     this.command.description = description
+    return this
+  }
+
+  setMetaData(meta: Record<string, unknown>): this {
+    this.metadata = meta
     return this
   }
 
@@ -273,6 +307,11 @@ export class GlyriaCommand extends BaseCommand {
   }
 
   build(): Command {
+    registerCommandInfo({
+      name: this.command.name,
+      description: this.command.description,
+      meta: this.metadata,
+    })
     return { ...this.command, options: [...this.options, ...this.command.options] }
   }
 

@@ -1,6 +1,6 @@
 export { defineGlyriaConfig } from "./core/config.js"
 export { GlyriaClient } from "./core/client.js"
-export { GlyriaCommand } from "./builders/commandBuilder.js"
+export { GlyriaCommand, useCommands } from "./builders/commandBuilder.js"
 export { GlyriaEvent } from "./builders/eventBuilder.js"
 export { EmbedV2Builder } from "./builders/embedV2Builder.js"
 export { createReplyableContext } from "./core/context/ReplyableContext.js"
