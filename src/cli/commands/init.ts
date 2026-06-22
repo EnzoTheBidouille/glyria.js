@@ -23,10 +23,9 @@ export const init = async () => {
       JSON.stringify(
         {
           compilerOptions: {
-            rootDir: "./src",
             outDir: "./dist",
-            module: "NodeNext",
-            moduleResolution: "NodeNext",
+            module: "es2022",
+            moduleResolution: "bundler",
             target: "ES2022",
             lib: ["ES2022"],
             types: ["node"],

@@ -4,7 +4,7 @@ import { resolve } from "path"
 import { pathToFileURL } from "url"
 
 export const start = async (enableModuleSDK = false) => {
-  const distFolder = enableModuleSDK ? "Bot/dist" : "dist"
+  const distFolder = enableModuleSDK ? "Bot/dist/src" : "dist/src"
   const entryPoint = `${distFolder}/index.js`
 
   if (!existsSync(entryPoint)) {

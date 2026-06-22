@@ -10,7 +10,7 @@ const EXTENSION = isDev ? ".ts" : ".js"
 const DEFAULT_SCAN_DIRS = ["utils", "composables"]
 const DEFAULT_SCAN_FILES = ["index"]
 
-const resolveSrcPath = (path: string) => (isDev ? `src/${path}` : `dist/${path}`)
+const resolveSrcPath = (path: string) => (isDev ? `src/${path}` : `dist/src/${path}`)
 
 export const injectUserGlobals = async () => {
   await loadConfig()

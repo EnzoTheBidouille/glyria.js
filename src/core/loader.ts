@@ -11,8 +11,8 @@ const ext = isDev ? ".ts" : ".js"
 const botRoot = process.env.GLYRIA_BOT_ROOT ? `${process.env.GLYRIA_BOT_ROOT}/` : ""
 
 // On applique le préfixe sur les dossiers du bot, mais PAS sur les node_modules
-const commandsDir = isDev ? `${botRoot}src/commands` : `${botRoot}dist/commands`
-const eventsDir = isDev ? `${botRoot}src/events` : `${botRoot}dist/events`
+const commandsDir = isDev ? `${botRoot}src/commands` : `${botRoot}dist/src/commands`
+const eventsDir = isDev ? `${botRoot}src/events` : `${botRoot}dist/src/events`
 
 interface LoadedCommand {
   json: ReturnType<GlyriaCommand["build"]>
@@ -29,11 +29,13 @@ const resolveModuleDir = (moduleName: string): string | null => {
   // Les modules restent dans le node_modules global du projet (pas dans Bot/node_modules)
   const base = resolve(process.cwd(), "node_modules", moduleName)
 
+  const distSrc = resolve(base, "dist/src")
   const dist = resolve(base, "dist")
   const src = resolve(base, "src")
 
   if (isDev && existsSync(resolve(base, "src"))) return src
 
+  if (existsSync(distSrc)) return distSrc
   if (existsSync(dist)) return dist
   if (existsSync(src)) return src
 
