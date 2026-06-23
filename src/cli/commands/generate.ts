@@ -8,6 +8,8 @@ const FRAMEWORK_EXPORTS = [
   "defineGlyriaConfig",
   "GlyriaClient",
   "GlyriaCommand",
+  "GlyriaUserCommand",
+  "GlyriaMessageCommand",
   "GlyriaEvent",
   "EmbedV2Builder",
   "createReplyableContext",

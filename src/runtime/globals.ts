@@ -1,5 +1,9 @@
 import { GlyriaClient, globalBus } from "../core/client.js"
-import { GlyriaCommand } from "../builders/commandBuilder.js"
+import {
+  GlyriaCommand,
+  GlyriaUserCommand,
+  GlyriaMessageCommand,
+} from "../builders/commandBuilder.js"
 import { GlyriaEvent } from "../builders/eventBuilder.js"
 import { EmbedV2Builder } from "../builders/embedV2Builder.js"
 import { defineGlyriaConfig } from "../core/config.js"
@@ -16,6 +20,8 @@ Object.assign(globalThis, {
   GlyriaClient,
   Events,
   GlyriaCommand,
+  GlyriaUserCommand,
+  GlyriaMessageCommand,
   GlyriaEvent,
   EmbedV2Builder,
   createReplyableContext,
