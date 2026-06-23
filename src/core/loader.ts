@@ -1,7 +1,11 @@
 import { readdirSync, existsSync } from "fs"
 import { resolve } from "path"
 import { pathToFileURL } from "url"
-import { GlyriaCommand } from "../builders/commandBuilder.js"
+import {
+  GlyriaCommand,
+  GlyriaUserCommand,
+  GlyriaMessageCommand,
+} from "../builders/commandBuilder.js"
 import { useConfig } from "./config.js"
 
 const isDev = process.env.GLYRIA_DEV === "true"
@@ -15,7 +19,9 @@ const commandsDir = isDev ? `${botRoot}src/commands` : `${botRoot}dist/src/comma
 const eventsDir = isDev ? `${botRoot}src/events` : `${botRoot}dist/src/events`
 
 interface LoadedCommand {
-  json: ReturnType<GlyriaCommand["build"]>
+  json: ReturnType<
+    GlyriaCommand["build"] | GlyriaUserCommand["build"] | GlyriaMessageCommand["build"]
+  >
   handlers: ReturnType<GlyriaCommand["getHandlers"]>
 }
 
@@ -55,14 +61,18 @@ export const loadCommands = async (): Promise<LoadedCommand[]> => {
         const fileUrl = pathToFileURL(resolve(path, entry.name)).href
 
         const mod = await import(`${fileUrl}?update=${Date.now()}`)
-        const cmd: GlyriaCommand = mod.default
+        const cmd = mod.default
 
-        if (!(cmd instanceof GlyriaCommand)) continue
-
-        loaded.push({
-          json: cmd.build(),
-          handlers: cmd.getHandlers(),
-        })
+        if (
+          cmd instanceof GlyriaCommand ||
+          cmd instanceof GlyriaUserCommand ||
+          cmd instanceof GlyriaMessageCommand
+        ) {
+          loaded.push({
+            json: cmd.build(),
+            handlers: cmd.getHandlers(),
+          })
+        }
       }
     }
   }

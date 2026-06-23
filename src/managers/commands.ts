@@ -87,25 +87,34 @@ export class CommandManager {
     if (!this.client) throw new Error("[Commands Manager] client is not defined")
 
     this.client.on("interactionCreate", async (interaction) => {
-      if (!interaction.isChatInputCommand()) return
+      let key: string
+      let handler: ((ctx: unknown) => unknown) | undefined
 
-      const commandName = interaction.commandName
-      const subCommandGroup = interaction.options.getSubcommandGroup(false)
-      const subCommand = interaction.options.getSubcommand(false)
+      if (interaction.isChatInputCommand()) {
+        const subCommandGroup = interaction.options.getSubcommandGroup(false)
+        const subCommand = interaction.options.getSubcommand(false)
+        key = subCommandGroup
+          ? `${interaction.commandName}:${subCommandGroup}:${subCommand}`
+          : subCommand
+            ? `${interaction.commandName}:${subCommand}`
+            : interaction.commandName
+        handler = this.handlers.get(key)
+      } else if (interaction.isUserContextMenuCommand()) {
+        handler = this.handlers.get(interaction.commandName)
+        key = interaction.commandName
+      } else if (interaction.isMessageContextMenuCommand()) {
+        handler = this.handlers.get(interaction.commandName)
+        key = interaction.commandName
+      } else {
+        return
+      }
 
-      const key = subCommandGroup
-        ? `${commandName}:${subCommandGroup}:${subCommand}`
-        : subCommand
-          ? `${commandName}:${subCommand}`
-          : commandName
-
-      const handler = this.handlers.get(key)
       if (!handler) return
 
       try {
         await handler(interaction)
       } catch (error) {
-        logger.error("Commands Manager", `Error while executing ${key}`)
+        logger.error("Commands Manager", `Error while executing ${key!}`)
         console.error(error)
       }
     })

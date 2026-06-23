@@ -1,4 +1,8 @@
-import type { ChatInputCommandInteraction } from "discord.js"
+import type {
+  ChatInputCommandInteraction,
+  UserContextMenuCommandInteraction,
+  MessageContextMenuCommandInteraction,
+} from "discord.js"
 
 interface Command {
   name: string
@@ -24,8 +28,6 @@ type BasicCommandOption =
   | NumberOption
   | UserOption
   | RoleOption
-
-// ===== OPTIONS =====
 
 interface BaseOption {
   name: string
@@ -57,16 +59,12 @@ interface RoleOption extends BaseOption {
   type: 8
 }
 
-// ===== SUBCOMMAND =====
-
 interface SubCommandOption {
   type: 1
   name: string
   description: string
   options: CommandOptionData[]
 }
-
-// ===== SUBCOMMAND GROUP =====
 
 interface SubCommandGroupOption {
   type: 2
@@ -75,23 +73,31 @@ interface SubCommandGroupOption {
   options: SubCommandOption[]
 }
 
-// ===== HANDLERS =====
-
-interface CommandHandler {
-  name: string
-  type: "command" | "subcommand"
-  handler: (ctx: ChatInputCommandInteraction) => unknown
-}
-
-// ===== COMMAND INFO =====
+type CommandHandler =
+  | {
+      name: string
+      type: "command" | "subcommand"
+      kind: "chat"
+      handler: (ctx: ChatInputCommandInteraction) => unknown
+    }
+  | {
+      name: string
+      type: "command" | "subcommand"
+      kind: "user"
+      handler: (ctx: UserContextMenuCommandInteraction) => unknown
+    }
+  | {
+      name: string
+      type: "command" | "subcommand"
+      kind: "message"
+      handler: (ctx: MessageContextMenuCommandInteraction) => unknown
+    }
 
 export interface CommandInfo {
   name: string
   description: string
   meta: Record<string, unknown>
 }
-
-// ===== OPTION BUILDER =====
 
 class CommandOption<T extends BasicCommandOption> {
   protected data: T
@@ -123,8 +129,6 @@ class CommandOptionInternal<T extends BasicCommandOption> extends CommandOption<
     return super.build()
   }
 }
-
-// ===== BASE COMMAND =====
 
 abstract class BaseCommand {
   protected options: CommandOptionData[] = []
@@ -159,8 +163,6 @@ abstract class BaseCommand {
   }
 }
 
-// ===== SUB COMMAND =====
-
 export class GlyriaSubCommand extends BaseCommand {
   private data = { name: "", description: "" }
 
@@ -173,8 +175,8 @@ export class GlyriaSubCommand extends BaseCommand {
     return this
   }
 
-  execute(handler: CommandHandler["handler"]): this {
-    this.handlers.push({ name: this.data.name, type: "subcommand", handler })
+  execute(handler: (ctx: ChatInputCommandInteraction) => unknown): this {
+    this.handlers.push({ name: this.data.name, type: "subcommand", kind: "chat", handler })
     return this
   }
 
@@ -194,8 +196,6 @@ export class GlyriaSubCommand extends BaseCommand {
     }))
   }
 }
-
-// ===== SUB COMMAND GROUP =====
 
 export class GlyriaSubCommandGroup {
   private data = { name: "", description: "", subcommands: [] as GlyriaSubCommand[] }
@@ -235,8 +235,6 @@ export class GlyriaSubCommandGroup {
   }
 }
 
-// ===== GLOBAL COMMAND REGISTRY =====
-
 const commandRegistry: CommandInfo[] = []
 
 export const clearCommandRegistry = (): void => {
@@ -253,8 +251,6 @@ export const registerCommandInfo = (info: CommandInfo): void => {
     commandRegistry.push(info)
   }
 }
-
-// ===== MAIN COMMAND =====
 
 export class GlyriaCommand extends BaseCommand {
   private command: Command = {
@@ -301,8 +297,8 @@ export class GlyriaCommand extends BaseCommand {
     return this
   }
 
-  execute(handler: CommandHandler["handler"]): this {
-    this.handlers.push({ name: this.command.name, type: "command", handler })
+  execute(handler: (ctx: ChatInputCommandInteraction) => unknown): this {
+    this.handlers.push({ name: this.command.name, type: "command", kind: "chat", handler })
     return this
   }
 
@@ -319,3 +315,83 @@ export class GlyriaCommand extends BaseCommand {
     return this.handlers
   }
 }
+
+export class GlyriaUserCommand {
+  private data = {
+    name: "",
+    type: 2 as const,
+    default_member_permissions: undefined as string | undefined,
+  }
+  private handlers: CommandHandler[] = []
+  private metadata: Record<string, unknown> = {}
+
+  setName(name: string): this {
+    this.data.name = name
+    return this
+  }
+
+  setMetaData(meta: Record<string, unknown>): this {
+    this.metadata = meta
+    return this
+  }
+
+  setPermissions(permissions: bigint | number | string): this {
+    this.data.default_member_permissions = permissions.toString()
+    return this
+  }
+
+  execute(handler: (ctx: UserContextMenuCommandInteraction) => unknown): this {
+    this.handlers.push({ name: this.data.name, type: "command", kind: "user", handler })
+    return this
+  }
+
+  build() {
+    registerCommandInfo({ name: this.data.name, description: "", meta: this.metadata })
+    return { ...this.data }
+  }
+
+  getHandlers(): CommandHandler[] {
+    return this.handlers
+  }
+}
+
+export class GlyriaMessageCommand {
+  private data = {
+    name: "",
+    type: 3 as const,
+    default_member_permissions: undefined as string | undefined,
+  }
+  private handlers: CommandHandler[] = []
+  private metadata: Record<string, unknown> = {}
+
+  setName(name: string): this {
+    this.data.name = name
+    return this
+  }
+
+  setMetaData(meta: Record<string, unknown>): this {
+    this.metadata = meta
+    return this
+  }
+
+  setPermissions(permissions: bigint | number | string): this {
+    this.data.default_member_permissions = permissions.toString()
+    return this
+  }
+
+  execute(handler: (ctx: MessageContextMenuCommandInteraction) => unknown): this {
+    this.handlers.push({ name: this.data.name, type: "command", kind: "message", handler })
+    return this
+  }
+
+  build() {
+    registerCommandInfo({ name: this.data.name, description: "", meta: this.metadata })
+    return { ...this.data }
+  }
+
+  getHandlers(): CommandHandler[] {
+    return this.handlers
+  }
+}
+
+export type { CommandHandler }
