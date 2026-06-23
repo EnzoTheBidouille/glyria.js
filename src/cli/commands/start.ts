@@ -18,7 +18,7 @@ export const start = async (enableModuleSDK = false) => {
     resolve(process.cwd(), "node_modules/@glyria/bot/dist/runtime/bootstrap.js"),
   ).href
 
-  const proc = spawn("node", ["--import", bootstrapPath, entryPoint], {
+  const proc = spawn("node", ["--import", bootstrapPath], {
     stdio: "inherit",
     shell: true,
     env: {

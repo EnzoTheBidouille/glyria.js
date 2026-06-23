@@ -102,14 +102,13 @@ export const dev = (enableModuleSDK = false) => {
 }
 
 const startBot = (enableModuleSDK: boolean) => {
-  const indexPath = enableModuleSDK ? "Bot/src/index.ts" : "src/index.ts"
   const bootstrapPath = pathToFileURL(
     resolve(process.cwd(), "node_modules/@glyria/bot/dist/runtime/bootstrap.js"),
   ).href
 
   const proc = spawn(
     process.execPath,
-    ["./node_modules/tsx/dist/cli.mjs", "--import", bootstrapPath, indexPath],
+    ["./node_modules/tsx/dist/cli.mjs", "--import", bootstrapPath],
     {
       stdio: ["inherit", "inherit", "inherit", "ipc"],
       windowsHide: true,
