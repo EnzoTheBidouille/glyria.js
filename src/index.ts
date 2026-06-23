@@ -13,3 +13,4 @@ export { hexToNumber } from "./utils/hexToNumber.js"
 export { GlyriaBus } from "./core/bus.js"
 
 export { globalBus } from "./core/client.js"
+export { logger } from "./core/logger.js"

@@ -1,4 +1,4 @@
-import { GlyriaClient } from "../core/client.js"
+import { GlyriaClient, globalBus } from "../core/client.js"
 import { GlyriaCommand } from "../builders/commandBuilder.js"
 import { GlyriaEvent } from "../builders/eventBuilder.js"
 import { EmbedV2Builder } from "../builders/embedV2Builder.js"
@@ -7,9 +7,9 @@ import { Events } from "discord.js"
 import { createReplyableContext } from "../core/context/ReplyableContext.js"
 import { hexToNumber } from "../utils/hexToNumber.js"
 import { GlyriaBus } from "../core/bus.js"
-import { globalBus } from "../index.js"
 import * as djs from "discord.js"
 import { useCommands } from "../builders/commandBuilder.js"
+import { logger } from "../core/logger.js"
 
 Object.assign(globalThis, {
   defineGlyriaConfig,
@@ -24,4 +24,5 @@ Object.assign(globalThis, {
   globalBus,
   djs,
   useCommands,
+  logger,
 })

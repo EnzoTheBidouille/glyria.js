@@ -15,6 +15,7 @@ const FRAMEWORK_EXPORTS = [
   "GlyriaBus",
   "globalBus",
   "useCommands",
+  "logger",
 ]
 
 const EXTENSION = ".ts"

@@ -81,8 +81,10 @@ export const injectUserGlobals = async () => {
       }
     }
   }
-
+  logger.success("Auto Imports", "Loaded globals from all files")
   // ===== SCAN INDEX (en dernier) =====
+  logger.info("Bot", `Starting bot from src/index${EXTENSION}...`)
+
   const indexFile = resolveSrcPath("index")
   const indexPath = resolve(process.cwd(), `${indexFile}${EXTENSION}`)
   if (existsSync(indexPath)) {
@@ -90,12 +92,9 @@ export const injectUserGlobals = async () => {
       const mod = await import(pathToFileURL(indexPath).href)
       if (typeof mod.init === "function") await mod.init()
       Object.assign(globalThis, mod)
-      logger.success("Auto Imports", `Loaded globals from src/index${EXTENSION}`)
     } catch (error) {
-      logger.error("Auto Imports", `Failed to load globals from src/index${EXTENSION}`)
+      logger.error("Bot", `Failed to start the bot from src/index${EXTENSION}`)
       console.error(error)
     }
   }
-
-  logger.success("Auto Imports", "Loaded globals from all files")
 }
