@@ -6,19 +6,15 @@ import { loadConfig, useConfig } from "../core/config.js"
 
 const isDev = process.env.GLYRIA_DEV === "true"
 const EXTENSION = isDev ? ".ts" : ".js"
-
 const DEFAULT_SCAN_DIRS = ["utils", "composables"]
 const DEFAULT_SCAN_FILES = ["index"]
-
 const resolveSrcPath = (path: string) => (isDev ? `src/${path}` : `dist/src/${path}`)
 
 export const injectUserGlobals = async () => {
   await loadConfig()
   const config = useConfig()
-
   const scanDirs = (config.dev?.autoImportDirs ?? DEFAULT_SCAN_DIRS).map(resolveSrcPath)
   const scanFiles = DEFAULT_SCAN_FILES.map(resolveSrcPath)
-
   const tasks: Promise<void>[] = []
 
   // ===== SCAN DIRS =====
@@ -32,8 +28,9 @@ export const injectUserGlobals = async () => {
           try {
             const filePath = resolve(fullDir, file)
             const mod = await import(pathToFileURL(filePath).href)
-            logger.success("Auto Imports", `Loaded global from ${dir}/${file}`)
+            if (typeof mod.init === "function") await mod.init()
             Object.assign(globalThis, mod)
+            logger.success("Auto Imports", `Loaded global from ${dir}/${file}`)
           } catch (error) {
             logger.error("Auto Imports", `Failed to load global from ${dir}/${file}`)
             console.error(error)
@@ -51,8 +48,9 @@ export const injectUserGlobals = async () => {
       (async () => {
         try {
           const mod = await import(pathToFileURL(filePath).href)
-          logger.success("Auto Imports", `Loaded globals from ${file}${EXTENSION}`)
+          if (typeof mod.init === "function") await mod.init()
           Object.assign(globalThis, mod)
+          logger.success("Auto Imports", `Loaded globals from ${file}${EXTENSION}`)
         } catch (error) {
           logger.error("Auto Imports", `Failed to load globals from ${file}${EXTENSION}`)
           console.error(error)
@@ -74,8 +72,9 @@ export const injectUserGlobals = async () => {
           .pop()!
           .replace(/[^a-zA-Z0-9]/g, "")
         const globalName = moduleName.charAt(0).toUpperCase() + moduleName.slice(1)
-        const globals = globalThis as Record<string, any>
+        const globals = globalThis as Record<string, unknown>
         globals[globalName] = mod
+        if (typeof mod.init === "function") await mod.init()
       } catch (error) {
         console.error(error)
         logger.warn("Auto Imports", ` Module "${module}" not found — is it installed?`)
