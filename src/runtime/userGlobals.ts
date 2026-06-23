@@ -14,7 +14,7 @@ export const injectUserGlobals = async () => {
   await loadConfig()
   const config = useConfig()
   const scanDirs = (config.dev?.autoImportDirs ?? DEFAULT_SCAN_DIRS).map(resolveSrcPath)
-  const scanFiles = DEFAULT_SCAN_FILES.map(resolveSrcPath)
+  const scanFiles = DEFAULT_SCAN_FILES.filter((f) => f !== "index").map(resolveSrcPath)
   const tasks: Promise<void>[] = []
 
   // ===== SCAN DIRS =====
@@ -79,6 +79,21 @@ export const injectUserGlobals = async () => {
         console.error(error)
         logger.warn("Auto Imports", ` Module "${module}" not found — is it installed?`)
       }
+    }
+  }
+
+  // ===== SCAN INDEX (en dernier) =====
+  const indexFile = resolveSrcPath("index")
+  const indexPath = resolve(process.cwd(), `${indexFile}${EXTENSION}`)
+  if (existsSync(indexPath)) {
+    try {
+      const mod = await import(pathToFileURL(indexPath).href)
+      if (typeof mod.init === "function") await mod.init()
+      Object.assign(globalThis, mod)
+      logger.success("Auto Imports", `Loaded globals from src/index${EXTENSION}`)
+    } catch (error) {
+      logger.error("Auto Imports", `Failed to load globals from src/index${EXTENSION}`)
+      console.error(error)
     }
   }
 
