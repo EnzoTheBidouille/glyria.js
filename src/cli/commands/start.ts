@@ -8,11 +8,9 @@ export const start = async (enableModuleSDK = false) => {
   const entryPoint = `${distFolder}/index.js`
 
   if (!existsSync(entryPoint)) {
-    console.error(`❌ Aucun build trouvé dans ${distFolder}, lance le build d'abord`)
+    console.error(`❌ No build found in ${distFolder}, start the build first.`)
     process.exit(1)
   }
-
-  console.log("🤖 Démarrage du bot...")
 
   const bootstrapPath = pathToFileURL(
     resolve(process.cwd(), "node_modules/@glyria/bot/dist/runtime/bootstrap.js"),

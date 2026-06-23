@@ -4,19 +4,17 @@ import { logger } from "../../core/logger.js"
 
 export const build = async (enableModuleSDK = false) => {
   logger.info("Build", "Building...")
-
-  // On passe le flag pour générer les auto-imports au bon endroit
   await generate(enableModuleSDK)
 
-  // On adapte la commande tsc selon le contexte
   const tscCommand = enableModuleSDK ? "npx tsc -p Bot/tsconfig.json" : "npx tsc"
+  const aliasCommand = enableModuleSDK ? "npx tsc-alias -p Bot/tsconfig.json" : "npx tsc-alias"
 
-  // compile le TS
   try {
     execSync(tscCommand, { stdio: "inherit" })
-    logger.success("Build", "Build terminé")
+    execSync(aliasCommand, { stdio: "inherit" })
+    logger.success("Build", "Build completed successfully")
   } catch {
-    console.error("❌ Build échoué")
+    logger.error("Build", "❌ Build failed")
     process.exit(1)
   }
 }
