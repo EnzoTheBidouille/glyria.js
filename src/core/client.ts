@@ -28,6 +28,7 @@ export interface GlyriaEvents extends ClientEvents {
       shardId: number
     },
   ]
+  commandsManagerReady: []
 }
 
 export const globalBus = new GlyriaBus<globalBusEvents>()
@@ -84,9 +85,24 @@ export class GlyriaClient extends Client {
     this.eventsManager.setClient(this)
     await this.eventsManager.load()
 
+    let clientReady = false
+    let commandsManagerReady = false
+
+    const checkReady = () => {
+      if (clientReady && commandsManagerReady) {
+        logger.ready(`${this.user?.tag}`)
+      }
+    }
+
+    this.bus.on("commandsManagerReady", () => {
+      commandsManagerReady = true
+      checkReady()
+    })
+
     this.once(Events.ClientReady, async () => {
+      clientReady = true
+      checkReady()
       await globalBus.emit("botReady", this)
-      logger.ready(`${this.user?.tag}`)
     })
 
     const loggedToken = await super.login(token ?? this.botToken)

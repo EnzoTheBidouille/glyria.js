@@ -47,6 +47,7 @@ export class CommandManager {
 
     await this.registerDiscordCommands()
     logger.success("Commands Manager", `${this.commands.length} command(s) loaded`)
+    await this.client.bus.emit("commandsManagerReady")
   }
 
   // ===== HOT RELOAD =====

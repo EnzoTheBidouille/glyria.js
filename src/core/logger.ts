@@ -53,7 +53,7 @@ export const logger = {
   ready(botName: string) {
     divider()
 
-    console.log(pc.gray("╰─"), pc.green("⚡"), pc.bold("bot"), pc.green(`Ready as ${botName}`))
+    console.log(pc.gray("╰─"), pc.green("⚡"), pc.bold("Bot"), pc.green(`Ready as ${botName}`))
 
     console.log("")
   },
