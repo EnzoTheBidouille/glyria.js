@@ -2,14 +2,9 @@
 
 import pc from "picocolors"
 
-import { readFileSync } from "fs"
-
-import { resolve } from "path"
-
 // ===== PACKAGE VERSION =====
 
-const packageJson = JSON.parse(readFileSync(resolve(process.cwd(), "package.json"), "utf-8"))
-
+import packageJson from "../../package.json" with { type: "json" }
 const version = packageJson.version ?? "0.0.0"
 
 // ===== HELPERS =====
