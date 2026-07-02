@@ -40,7 +40,7 @@ export const loadConfig = async () => {
   const jiti = createJiti(import.meta.url)
   const mod = await jiti.import(pathToFileURL(path).href)
 
-  _config = (mod as any).default ?? {}
+  _config = (mod as { default?: GlyriaConfig }).default ?? {}
 }
 
 export const useConfig = () => _config

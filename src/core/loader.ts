@@ -7,6 +7,7 @@ import {
   GlyriaMessageCommand,
 } from "../builders/commandBuilder.js"
 import { useConfig } from "./config.js"
+import type { AnyArgs } from "../types/handlers.js"
 
 const isDev = process.env.GLYRIA_DEV === "true"
 const ext = isDev ? ".ts" : ".js"
@@ -18,17 +19,17 @@ const botRoot = process.env.GLYRIA_BOT_ROOT ? `${process.env.GLYRIA_BOT_ROOT}/` 
 const commandsDir = isDev ? `${botRoot}src/commands` : `${botRoot}dist/src/commands`
 const eventsDir = isDev ? `${botRoot}src/events` : `${botRoot}dist/src/events`
 
-interface LoadedCommand {
+export interface LoadedCommand {
   json: ReturnType<
     GlyriaCommand["build"] | GlyriaUserCommand["build"] | GlyriaMessageCommand["build"]
   >
   handlers: ReturnType<GlyriaCommand["getHandlers"]>
 }
 
-interface LoadedEvents {
+export interface LoadedEvent {
   name: string
   once: boolean
-  handler: (...args: any[]) => void
+  handler: (...args: AnyArgs) => unknown
 }
 
 const resolveModuleDir = (moduleName: string): string | null => {
@@ -97,8 +98,8 @@ export const loadCommands = async (): Promise<LoadedCommand[]> => {
   return loaded
 }
 
-export const loadEvents = async (): Promise<LoadedEvents[]> => {
-  const loaded: LoadedEvents[] = []
+export const loadEvents = async (): Promise<LoadedEvent[]> => {
+  const loaded: LoadedEvent[] = []
 
   const scanDir = async (dir: string) => {
     const entries = readdirSync(dir, { withFileTypes: true })

@@ -27,6 +27,8 @@ export interface MediaGalleryItem {
   spoiler?: boolean
 }
 
+type Component = Record<string, unknown>
+
 // ===== HELPERS =====
 
 const styleMap: Record<string, number> = {
@@ -48,10 +50,19 @@ const buildButton = (opts: ButtonOptions) => ({
   ...(opts.disabled !== undefined && { disabled: opts.disabled }),
 })
 
+const buildMediaGallery = (items: MediaGalleryItem[]) => ({
+  type: 12,
+  items: items.map((i) => ({
+    media: { url: i.url },
+    ...(i.description && { description: i.description }),
+    ...(i.spoiler !== undefined && { spoiler: i.spoiler }),
+  })),
+})
+
 // ===== ACTION ROW (dans container) =====
 
 class ActionRowBuilder {
-  private components: any[] = []
+  private components: Component[] = []
   constructor(private parent: ContainerBuilder) {}
 
   button(opts: ButtonOptions) {
@@ -68,7 +79,7 @@ class ActionRowBuilder {
 // ===== ACTION ROW (root) =====
 
 class RootActionRowBuilder {
-  private components: any[] = []
+  private components: Component[] = []
   constructor(private parent: EmbedV2Builder) {}
 
   button(opts: ButtonOptions) {
@@ -85,8 +96,8 @@ class RootActionRowBuilder {
 // ===== SECTION =====
 
 class SectionBuilder {
-  private texts: any[] = []
-  private accessory: any
+  private texts: Component[] = []
+  private accessory?: Component
 
   constructor(private parent: ContainerBuilder) {}
 
@@ -116,7 +127,8 @@ class SectionBuilder {
 // ===== CONTAINER =====
 
 class ContainerBuilder {
-  private components: any[] = []
+  private components: Component[] = []
+  private ended = false
 
   constructor(
     private parent: EmbedV2Builder,
@@ -137,13 +149,7 @@ class ContainerBuilder {
   }
 
   mediaGallery(items: MediaGalleryItem[]) {
-    this.components.push({
-      type: 12,
-      items: items.map((i) => ({
-        media: { url: i.url },
-        ...(i.description && { description: i.description }),
-      })),
-    })
+    this.components.push(buildMediaGallery(items))
     return this
   }
 
@@ -160,12 +166,15 @@ class ContainerBuilder {
     return new ActionRowBuilder(this)
   }
 
-  _push(component: any) {
+  _push(component: Component) {
     this.components.push(component)
     return this
   }
 
   end(): EmbedV2Builder {
+    if (this.ended) throw new Error("embedV2: container already ended")
+    this.ended = true
+
     const config = useConfig()
 
     if (config.theme?.embedV2?.footer?.text) {
@@ -184,7 +193,7 @@ class ContainerBuilder {
 // ===== EMBED V2 BUILDER =====
 
 export class EmbedV2Builder {
-  private components: any[] = []
+  private components: Component[] = []
 
   textDisplay(content: string) {
     this.components.push({ type: 10, content })
@@ -200,7 +209,7 @@ export class EmbedV2Builder {
   }
 
   mediaGallery(items: MediaGalleryItem[]) {
-    this.components.push({ type: 12, items: items.map((i) => ({ media: { url: i.url } })) })
+    this.components.push(buildMediaGallery(items))
     return this
   }
 
@@ -212,7 +221,7 @@ export class EmbedV2Builder {
     return new RootActionRowBuilder(this)
   }
 
-  _push(component: any) {
+  _push(component: Component) {
     this.components.push(component)
     return this
   }

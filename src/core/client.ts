@@ -107,7 +107,7 @@ export class GlyriaClient extends Client {
 
     const loggedToken = await super.login(token ?? this.botToken)
 
-    this.commandsManager.setClient(this).setToken(this.botToken)
+    this.commandsManager.setClient(this).setToken(token ?? this.botToken)
 
     await this.commandsManager.load()
     this.commandsManager.listen()

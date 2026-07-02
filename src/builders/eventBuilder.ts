@@ -1,9 +1,11 @@
 import { Events } from "discord.js"
 
+import type { AnyArgs } from "../types/handlers.js"
+
 interface EventHandler {
   event: Events
   once: boolean
-  handler: (...args: any[]) => unknown
+  handler: (...args: AnyArgs) => unknown
 }
 
 export class GlyriaEvent {
@@ -23,7 +25,7 @@ export class GlyriaEvent {
     return this
   }
 
-  setHandler(handler: (...args: any[]) => unknown): this {
+  setHandler(handler: (...args: AnyArgs) => unknown): this {
     this.data.handler = handler
     return this
   }

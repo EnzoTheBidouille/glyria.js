@@ -4,28 +4,24 @@ import { Events, type ClientEvents } from "discord.js"
 
 import { loadEvents } from "../core/loader.js"
 
+import type { LoadedEvent } from "../core/loader.js"
+
 import type { GlyriaClient, GlyriaEvents } from "../core/client.js"
 
+import type { AnyArgs } from "../types/handlers.js"
+
 import { logger } from "../core/logger.js"
-
-interface LoadedEvent {
-  name: string
-
-  once: boolean
-
-  handler: (...args: any[]) => void | Promise<void>
-}
 
 export class EventManager {
   private client?: GlyriaClient
 
   private events: LoadedEvent[] = []
 
-  // listeners users
-  private listeners = new Map<string, (...args: any[]) => void>()
+  // unsubscribe functions of user listeners
+  private unsubscribers: (() => void)[] = []
 
   // listeners bridge djs
-  private bridgeListeners = new Map<string, (...args: any[]) => void>()
+  private bridgeListeners = new Map<string, (...args: AnyArgs) => void>()
 
   // ===== SET CLIENT =====
 
@@ -63,12 +59,12 @@ export class EventManager {
 
     logger.hotreload("Watcher", "Hot reloading events...")
 
-    // clear bus listeners
-    for (const name of this.listeners.keys()) {
-      this.client.bus.clear(name as keyof GlyriaEvents)
+    // unregister user listeners without touching listeners registered elsewhere
+    for (const unsubscribe of this.unsubscribers) {
+      unsubscribe()
     }
 
-    this.listeners.clear()
+    this.unsubscribers = []
 
     // reload events
     this.events = await loadEvents()
@@ -94,11 +90,11 @@ export class EventManager {
         continue
       }
 
-      const listener = async (...args: any[]) => {
+      const listener = async (...args: AnyArgs) => {
         try {
           // ===== EMIT BUS =====
 
-          await (this.client?.bus.emit as any)(event, ...args)
+          await this.client?.bus.emit(event, ...(args as GlyriaEvents[typeof event]))
         } catch (error) {
           logger.error("Events Manager", `❌ Error while bridging ${event}`)
 
@@ -120,7 +116,7 @@ export class EventManager {
     }
 
     for (const event of this.events) {
-      const listener = async (...args: any[]) => {
+      const listener = async (...args: AnyArgs) => {
         try {
           await event.handler(...args)
         } catch (error) {
@@ -130,19 +126,15 @@ export class EventManager {
         }
       }
 
-      this.listeners.set(event.name, listener)
-
       // ===== REGISTER BUS =====
 
-      if (event.once) {
-        this.client.bus.use(event.name as any, async (...args) => {
-          this.client?.bus.off(event.name as any, listener as any)
+      const name = event.name as keyof GlyriaEvents
 
-          await listener(...args)
-        })
-      } else {
-        this.client.bus.on(event.name as any, listener)
-      }
+      const off = event.once
+        ? this.client.bus.once(name, listener)
+        : this.client.bus.on(name, listener)
+
+      this.unsubscribers.push(off)
     }
   }
 }

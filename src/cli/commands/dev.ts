@@ -38,67 +38,72 @@ export const dev = (enableModuleSDK = false) => {
     })
 
   // Watcher src
+  const onSrcChange = async (filePath: string) => {
+    if (!filePath.endsWith(".ts")) return
+
+    const cleanFilename = enableModuleSDK
+      ? filePath.replace(/.*Bot\//, "")
+      : filePath.replace(/.*src\//, "")
+
+    if (!shouldProcess(cleanFilename)) return
+
+    // Hot reload commands
+    if (cleanFilename.startsWith("commands")) {
+      proc.send?.({ type: "hotreload:commands" })
+      return
+    }
+
+    // Hot reload events
+    if (cleanFilename.startsWith("events")) {
+      proc.send?.({ type: "hotreload:events" })
+      return
+    }
+
+    await loadConfig()
+    const config = useConfig()
+
+    const autoImportDirs = config.dev?.autoImportDirs ?? ["utils", "composables"]
+    const restartPaths = config.dev?.restartPaths ?? ["composables", "utils", "services"]
+
+    // Regenerate types si c'est un fichier d'auto-import
+    const isAutoImportFile =
+      autoImportDirs.some((p) => cleanFilename.startsWith(p)) || cleanFilename === "index.ts"
+
+    if (isAutoImportFile) {
+      await generate(enableModuleSDK)
+    }
+
+    // Full restart
+    if (!restartPaths.some((p) => cleanFilename.startsWith(p))) return
+
+    if (restartTimeout) clearTimeout(restartTimeout)
+    restartTimeout = setTimeout(() => {
+      if (restarting) return
+      restarting = true
+      logger.hotreload("Watcher", `${cleanFilename} changed, restarting...`)
+
+      if (process.platform === "win32") {
+        execSync(`taskkill /pid ${proc.pid} /T /F`)
+      } else {
+        proc.kill("SIGTERM")
+      }
+
+      proc.once("exit", () => {
+        proc = startBot(enableModuleSDK)
+        restarting = false
+      })
+    }, 200)
+  }
+
   chokidar
     .watch(resolve(getBotPath("src")), {
-      ignored: /(^|[\/\\])\../,
+      ignored: /(^|[/\\])\../,
+      ignoreInitial: true,
       awaitWriteFinish: { stabilityThreshold: 200, pollInterval: 100 },
     })
-    .on("change", async (filePath) => {
-      if (!filePath.endsWith(".ts")) return
-
-      const cleanFilename = enableModuleSDK
-        ? filePath.replace(/.*Bot\//, "")
-        : filePath.replace(/.*src\//, "")
-
-      if (!shouldProcess(cleanFilename)) return
-
-      // Hot reload commands
-      if (cleanFilename.startsWith("commands")) {
-        proc.send?.({ type: "hotreload:commands" })
-        return
-      }
-
-      // Hot reload events
-      if (cleanFilename.startsWith("events")) {
-        proc.send?.({ type: "hotreload:events" })
-        return
-      }
-
-      await loadConfig()
-      const config = useConfig()
-
-      const autoImportDirs = config.dev?.autoImportDirs ?? ["utils", "composables"]
-      const restartPaths = config.dev?.restartPaths ?? ["composables", "utils", "services"]
-
-      // Regenerate types si c'est un fichier d'auto-import
-      const isAutoImportFile =
-        autoImportDirs.some((p) => cleanFilename.startsWith(p)) || cleanFilename === "index.ts"
-
-      if (isAutoImportFile) {
-        await generate(enableModuleSDK)
-      }
-
-      // Full restart
-      if (!restartPaths.some((p) => cleanFilename.startsWith(p))) return
-
-      if (restartTimeout) clearTimeout(restartTimeout)
-      restartTimeout = setTimeout(() => {
-        if (restarting) return
-        restarting = true
-        logger.hotreload("Watcher", `${cleanFilename} changed, restarting...`)
-
-        if (process.platform === "win32") {
-          execSync(`taskkill /pid ${proc.pid} /T /F`)
-        } else {
-          proc.kill("SIGTERM")
-        }
-
-        proc.once("exit", () => {
-          proc = startBot(enableModuleSDK)
-          restarting = false
-        })
-      }, 200)
-    })
+    .on("change", onSrcChange)
+    .on("add", onSrcChange)
+    .on("unlink", onSrcChange)
 }
 
 const startBot = (enableModuleSDK: boolean) => {
