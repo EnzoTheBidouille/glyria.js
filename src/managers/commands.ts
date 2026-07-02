@@ -1,23 +1,18 @@
 // src/managers/commands.ts
 import { REST, Routes } from "discord.js"
 import { loadCommands } from "../core/loader.js"
+import type { LoadedCommand } from "../core/loader.js"
 import type { GlyriaClient } from "../core/client.js"
+import type { CommandHandler } from "../builders/commandBuilder.js"
 import { logger } from "../core/logger.js"
 import { clearCommandRegistry } from "../builders/commandBuilder.js"
-
-interface LoadedCommand {
-  json: any
-  handlers: {
-    name: string
-    handler: (ctx: any) => unknown
-  }[]
-}
 
 export class CommandManager {
   private client?: GlyriaClient
   private token?: string
-  private handlers = new Map<string, (ctx: any) => unknown>()
+  private handlers = new Map<string, CommandHandler["handler"]>()
   private commands: LoadedCommand[] = []
+  private listening = false
 
   // ===== SETTERS =====
   setClient(client: GlyriaClient) {
@@ -76,8 +71,13 @@ export class CommandManager {
     if (!this.client) throw new Error("[Commands Manager] client is not defined")
     if (!this.token) throw new Error("[Commands Manager] token is not defined")
 
+    const applicationId = this.client.user?.id
+    if (!applicationId) {
+      throw new Error("[Commands Manager] client is not logged in, cannot register commands")
+    }
+
     const rest = new REST().setToken(this.token)
-    await rest.put(Routes.applicationCommands(this.client.user?.id!), {
+    await rest.put(Routes.applicationCommands(applicationId), {
       body: this.commands.map((c) => c.json),
     })
   }
@@ -85,10 +85,12 @@ export class CommandManager {
   // ===== LISTENER =====
   listen() {
     if (!this.client) throw new Error("[Commands Manager] client is not defined")
+    if (this.listening) return
+    this.listening = true
 
     this.client.on("interactionCreate", async (interaction) => {
       let key: string
-      let handler: ((ctx: unknown) => unknown) | undefined
+      let handler: CommandHandler["handler"] | undefined
 
       if (interaction.isChatInputCommand()) {
         const subCommandGroup = interaction.options.getSubcommandGroup(false)
@@ -112,7 +114,9 @@ export class CommandManager {
       if (!handler) return
 
       try {
-        await handler(interaction)
+        // the handler union narrows per interaction kind at registration time;
+        // the map erases that link, so the call site widens the argument
+        await handler(interaction as never)
       } catch (error) {
         logger.error("Commands Manager", `Error while executing ${key!}`)
         console.error(error)

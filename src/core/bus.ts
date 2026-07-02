@@ -1,14 +1,12 @@
 export type NextFunction = () => void | Promise<void>
 
-export type Middleware<T extends any[]> = (
-  ...args: [...ctx: T, next: NextFunction]
-) => any | Promise<any>
+export type Middleware<T extends unknown[]> = (...args: [...ctx: T, next: NextFunction]) => unknown
 
-export type Listener<T extends any[]> = (...ctx: T) => any | Promise<any>
+export type Listener<T extends unknown[]> = (...ctx: T) => unknown
 
 export class GlyriaBus<
   Events extends {
-    [K in keyof Events]: any[]
+    [K in keyof Events]: unknown[]
   },
 > {
   private listeners: {
@@ -44,6 +42,17 @@ export class GlyriaBus<
     return () => {
       this.off(event, middleware)
     }
+  }
+
+  // ===== ONCE =====
+
+  public once<K extends keyof Events>(event: K, listener: Listener<Events[K]>) {
+    const off = this.on(event, async (...ctx) => {
+      off()
+      await listener(...ctx)
+    })
+
+    return off
   }
 
   // ===== OFF =====

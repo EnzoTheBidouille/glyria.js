@@ -8,23 +8,23 @@ import { hexToNumber } from "../../utils/hexToNumber.js"
 // ===== TYPES =====
 
 export interface Replyable {
-  reply(options: any): Promise<any>
+  reply(options: unknown): Promise<unknown>
 }
 
 export type GlyriaContext<T extends Replyable> = T & {
   g: {
     reply: {
-      primary(content: string): Promise<any>
+      primary(content: string): Promise<unknown>
 
-      secondary(content: string): Promise<any>
+      secondary(content: string): Promise<unknown>
 
-      success(content: string): Promise<any>
+      success(content: string): Promise<unknown>
 
-      warning(content: string): Promise<any>
+      warning(content: string): Promise<unknown>
 
-      error(content: string): Promise<any>
+      error(content: string): Promise<unknown>
 
-      info(content: string): Promise<any>
+      info(content: string): Promise<unknown>
     }
   }
 }
