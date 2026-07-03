@@ -19,6 +19,7 @@ const FRAMEWORK_EXPORTS = [
   "useCommands",
   "logger",
   "Events",
+  "GatewayIntentBits",
   "GlyriaButton",
   "GlyriaSelect",
   "GlyriaModal",

@@ -16,7 +16,7 @@ import { loadConfig, useConfig } from "./config.js"
 import { logger } from "./logger.js"
 import { configureStore } from "./store.js"
 
-interface GlyriaClientOptions {
+export interface GlyriaClientOptions {
   intents: BitFieldResolvable<GatewayIntentsString, number>
 }
 

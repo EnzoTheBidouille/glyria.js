@@ -12,7 +12,7 @@ import { defineModule, defineCommand, defineEvent, defineHook } from "../sdk/def
 import { createTestContext } from "../sdk/testContext.js"
 import { useStore } from "../core/store.js"
 import { canvas } from "../core/canvas/index.js"
-import { Events } from "discord.js"
+import { Events, GatewayIntentBits } from "discord.js"
 import { createReplyableContext } from "../core/context/ReplyableContext.js"
 import { hexToNumber } from "../utils/hexToNumber.js"
 import { GlyriaBus } from "../core/bus.js"
@@ -24,6 +24,7 @@ Object.assign(globalThis, {
   defineGlyriaConfig,
   GlyriaClient,
   Events,
+  GatewayIntentBits,
   GlyriaCommand,
   GlyriaUserCommand,
   GlyriaMessageCommand,

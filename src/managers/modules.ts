@@ -27,7 +27,7 @@ export interface LoadedModule {
   statusReason?: string | undefined
 }
 
-/** Consecutive runtime hook errors before a module is auto-disabled. */
+/** Cumulative runtime hook errors before a module is auto-disabled. */
 const MAX_HOOK_ERRORS = 5
 
 // ===== TOPO SORT =====

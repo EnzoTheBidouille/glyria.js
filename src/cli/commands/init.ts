@@ -12,6 +12,8 @@ export const init = async () => {
   // arborescence
   mkdirSync("src/commands", { recursive: true })
   mkdirSync("src/events", { recursive: true })
+  mkdirSync("src/components", { recursive: true })
+  mkdirSync("src/modules", { recursive: true })
   mkdirSync("src/utils", { recursive: true })
   mkdirSync("src/composables", { recursive: true })
   mkdirSync(".glyria", { recursive: true })

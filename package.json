@@ -17,6 +17,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./globals": {
+      "types": "./dist/runtime/globals.d.ts",
+      "import": "./dist/runtime/globals.js"
     }
   },
   "scripts": {

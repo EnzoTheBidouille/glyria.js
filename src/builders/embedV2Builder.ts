@@ -144,6 +144,7 @@ class ContainerBuilder {
     this.components.push({
       type: 14,
       ...(opts.spacing && { spacing: opts.spacing === "large" ? 2 : 1 }),
+      ...(opts.divider !== undefined && { divider: opts.divider }),
     })
     return this
   }
@@ -204,6 +205,7 @@ export class EmbedV2Builder {
     this.components.push({
       type: 14,
       ...(opts.spacing && { spacing: opts.spacing === "large" ? 2 : 1 }),
+      ...(opts.divider !== undefined && { divider: opts.divider }),
     })
     return this
   }

@@ -1,11 +1,18 @@
 export { defineGlyriaConfig } from "./core/config.js"
 export { GlyriaClient } from "./core/client.js"
+export type { GlyriaClientOptions, GlyriaEvents } from "./core/client.js"
+export { CommandManager } from "./managers/commands.js"
+export { EventManager } from "./managers/events.js"
+export { ComponentManager } from "./managers/components.js"
 export {
   GlyriaCommand,
   GlyriaUserCommand,
   GlyriaMessageCommand,
+  GlyriaSubCommand,
+  GlyriaSubCommandGroup,
   useCommands,
 } from "./builders/commandBuilder.js"
+export type { AutocompleteEntry, CommandInfo } from "./builders/commandBuilder.js"
 export { GlyriaEvent } from "./builders/eventBuilder.js"
 export { EmbedV2Builder } from "./builders/embedV2Builder.js"
 export {
@@ -15,7 +22,11 @@ export {
   buildCustomId,
   compilePattern,
 } from "./builders/componentBuilder.js"
-export type { PatternParams, ComponentDefinition } from "./builders/componentBuilder.js"
+export type {
+  PatternParams,
+  ComponentDefinition,
+  ComponentKind,
+} from "./builders/componentBuilder.js"
 export {
   GlyriaStore,
   MemoryStoreAdapter,
@@ -63,6 +74,7 @@ export { Events } from "discord.js"
 
 export { hexToNumber } from "./utils/hexToNumber.js"
 export { GlyriaBus } from "./core/bus.js"
+export type { Middleware, Listener, NextFunction } from "./core/bus.js"
 
 export { globalBus } from "./core/client.js"
 export { logger } from "./core/logger.js"
@@ -87,6 +99,11 @@ export type {
   ModuleRegistryAccess,
 } from "./sdk/defineModule.js"
 export { createTestContext } from "./sdk/testContext.js"
-export type { TestContext, TestContextOptions, CapturedReply } from "./sdk/testContext.js"
+export type {
+  TestContext,
+  TestContextOptions,
+  CapturedReply,
+  FakeInteraction,
+} from "./sdk/testContext.js"
 export { ModuleManager, resolveLoadOrder } from "./managers/modules.js"
 export type { ModuleStatus, LoadedModule } from "./managers/modules.js"
