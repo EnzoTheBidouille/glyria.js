@@ -18,6 +18,17 @@ const FRAMEWORK_EXPORTS = [
   "globalBus",
   "useCommands",
   "logger",
+  "Events",
+  "GlyriaButton",
+  "GlyriaSelect",
+  "GlyriaModal",
+  "defineModule",
+  "defineCommand",
+  "defineEvent",
+  "defineHook",
+  "createTestContext",
+  "useStore",
+  "canvas",
 ]
 
 const EXTENSION = ".ts"
